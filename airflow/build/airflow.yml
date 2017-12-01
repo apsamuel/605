@@ -1,0 +1,65 @@
+---
+- hosts: localhost
+  vars:
+      work_dir: "/Users/photon/DevOps/605"
+      mysql_pass: "testing1234^321"
+  become: yes
+  remote_user: ubuntu
+  tasks:
+      - name: set deb-conf-selections-mysql-password
+        debconf:
+            name: mysql-server
+            question: mysql-server/root_password
+            value: "{{mysql_pass | quote}}"
+            type: password
+      - name: set deb-conf-selections-mysql-password-again
+        debconf:
+            name: mysql-server
+            question: mysql-server/root_password_again
+            value: "{{mysql_pass | quote}}"
+            type: password
+      - name: install_system_packages  
+        apt: 
+            name: "{{ item }}"
+        become: true
+        with_items:    
+            - "build-essential"
+            - "libssl-dev"
+            - "libffi-dev"
+            - "libmysql++-dev"
+            - "mysql-client"
+            - "postgresql-client"
+            - "jq"
+            - "python-dev"
+            - "mysql-server"
+            - "tcl"
+      - name: install_python_packages
+        pip: 
+            name: "{{ item }}"
+        become: true
+        with_items:    
+            - "awscli"
+            - "airflow[all]"
+      - name: fetch_redis_source
+        script: curl -O http://download.redis.io/redis-stable.tar.gz
+        become: true
+        args:
+            chdir: /tmp
+      - name: unpack_source
+        script: tar xfv redis-stable.tar.gz
+        become: true
+        args:
+            chdir: /tmp
+      - name: make redis-stable
+        script: make
+        args:
+            chdir: /tmp/redis-stable
+      - name: install redis-stable
+        script: make install
+        become: true
+        args:
+            chdir: /tmp/redis-stable
+
+
+
+

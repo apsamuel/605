@@ -1,0 +1,22 @@
+[
+    {
+        "ParameterKey": "KeyName",
+        "ParameterValue": "aaron-test"
+    },
+    {
+        "ParameterKey": "ImageId",
+        "ParameterValue": "ami-e40c949e"
+    },
+    {
+        "ParameterKey": "InstanceType",
+        "ParameterValue": "t2.medium"
+    },
+    {
+        "ParameterKey": "SSHLocation",
+        "ParameterValue": "68.197.251.55/32"
+    },
+    {
+        "ParameterKey": "AirflowCapacity",
+        "ParameterValue": "1"
+    }
+]
