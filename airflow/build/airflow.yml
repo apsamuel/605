@@ -10,14 +10,14 @@
         debconf:
             name: mysql-server
             question: mysql-server/root_password
-            value: "{{mysql_pass | quote}}"
-            vtype: password
+            value: "{{mysql_pass}}"
+            vtype: text
       - name: set deb-conf-selections-mysql-password-again
         debconf:
             name: mysql-server
             question: mysql-server/root_password_again
-            value: "{{mysql_pass | quote}}"
-            vtype: password
+            value: "{{mysql_pass}}"
+            vtype: text
       - name: install_system_packages  
         apt: 
             name: "{{ item }}"
