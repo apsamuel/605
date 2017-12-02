@@ -1,8 +1,8 @@
----
+---  
 - hosts: localhost
   vars:
-      work_dir: "/Users/photon/DevOps/605"
-      mysql_pass: "testing1234^321"
+    work_dir: "/Users/photon/DevOps/605"
+    mysql_pass: "testing1234^321"
   become: yes
   remote_user: ubuntu
   tasks:
@@ -11,13 +11,13 @@
             name: mysql-server
             question: mysql-server/root_password
             value: "{{mysql_pass | quote}}"
-            type: password
+            vtype: password
       - name: set deb-conf-selections-mysql-password-again
         debconf:
             name: mysql-server
             question: mysql-server/root_password_again
             value: "{{mysql_pass | quote}}"
-            type: password
+            vtype: password
       - name: install_system_packages  
         apt: 
             name: "{{ item }}"
@@ -41,24 +41,44 @@
             - "awscli"
             - "airflow[all]"
       - name: fetch_redis_source
-        script: curl -O http://download.redis.io/redis-stable.tar.gz
+        command: curl -O http://download.redis.io/redis-stable.tar.gz
         become: true
         args:
             chdir: /tmp
       - name: unpack_source
-        script: tar xfv redis-stable.tar.gz
+        command: tar xfv redis-stable.tar.gz
         become: true
         args:
             chdir: /tmp
+      - name: setup redis dir
+        command: mkdir /etc/redis
+        become: true
       - name: make redis-stable
-        script: make
+        command: make
         args:
             chdir: /tmp/redis-stable
       - name: install redis-stable
-        script: make install
+        command: make install
         become: true
         args:
             chdir: /tmp/redis-stable
+      - name: configure redis-stable
+        command: cp redis.conf /etc/redis
+        become: true
+        args:
+            chdir: /tmp/redis-stable
+      - name: configure redis-stable
+        command: cp redis.conf /etc/redis
+        become: true
+        args:
+            chdir: /tmp/redis-stable
+      - name: set supervise control
+        command: sed -i -e 's/^supervised no/supervised systemd/g' /etc/redis/redis.conf
+        become: true
+      - name: set work dir
+        command: sed -i -e 's#^dir ./#dir /var/lib/redis#g' /etc/redis/redis.conf
+        become: true
+
 
 
 

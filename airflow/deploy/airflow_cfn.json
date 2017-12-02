@@ -40,6 +40,48 @@
                     "config": {
                         "packages": {},
                         "files": {
+                            "/etc/systemd/system/redis.service": {
+                                "owner": "root",
+                                "group": "root",
+                                "content": { "Fn::Join": ["\n", [
+                                    "[Unit]",
+                                    "Description=Redis In-Memory Data Store",
+                                    "After=network.target",
+                                    "",
+                                    "[Service]",
+                                    "User=redis",
+                                    "Group=redis",
+                                    "ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf",
+                                    "ExecStop=/usr/local/bin/redis-cli shutdown",
+                                    "Restart=always",
+                                    "",
+                                    "[Install]",
+                                    "WantedBy=multi-user.target"
+                                ]]}
+                            },
+                            "/etc/systemd/system/airflow.service": {
+                                "owner": "root",
+                                "group": "root",
+                                "content": { "Fn::Join": ["\n", [
+                                    "[Unit]",
+                                    "Description=Airflow Service",
+                                    "After=network.target mysql.service redis.service",
+                                    "Wants=mysql.service redis.service",
+                                    "[Service]",
+                                    "User=airflow",
+                                    "Group=airflow",
+                                    "Type=simple",
+                                    "ExecStart=/bin/bash -c 'export AIRFLOW_HOME=/root/airflow ; airflow webserver --pid /run/airflow/webserver.pid'",
+                                    "ExecReload=/bin/kill -s HUP $MAINPID",
+                                    "ExecStop=/bin/kill -s TERM $MAINPID",
+                                    "Restart=on-failure",
+                                    "RestartSec=42s",
+                                    "PrivateTmp=true",
+                                    "",
+                                    "[Install]",
+                                    "WantedBy=multi-user.target"
+                                ]]}
+                            },
                             "/root/airflow/airflow.cfg": {
                                 "owner": "root",
                                 "group": "root",
@@ -65,7 +107,7 @@
                                     "plugins_folder = /root/airflow/plugins",
                                     "fernet_key = -k_t5S1Hh2Bu4gH_B09iACGc9TV-wCRXd5Z5ZHcAoHk=",
                                     "donot_pickle = False",
-                                    "dagbag_import_timeout = 30",,
+                                    "dagbag_import_timeout = 30",
                                     "task_runner = BashTaskRunner",
                                     "default_impersonation =",
                                     "security =",
@@ -168,10 +210,16 @@
                 "InstanceType": {"Ref": "InstanceType"},
                 "UserData": { "Fn::Base64" : { "Fn::Join" : ["", [
                     "#!/bin/bash -xe\n",
+                    "sudo adduser --system --group --no-create-home redis\n",
+                    "sudo adduser --system --group --no-create-home airflow\n",
+                    "sudo mkdir -p /var/lib/redis\n",
                     "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                     "tar xzf aws-cfn-bootstrap-latest.tar.gz && mv aws-cfn-bootstrap-1.4 aws-cfn-bootstrap-latest\n",
                     "easy_install aws-cfn-bootstrap-latest\n",
                     "/usr/local/bin/cfn-init --stack ", {"Ref": "AWS::StackName"}, " --resource AirflowLaunchConfig", " --region ", {"Ref": "AWS::Region"}, "\n",
+                    "sudo systemctl restart mysql.service\n",
+                    "sudo systemctl start redis.service\n",
+                    "sudo systemctl start airflow.service\n",
                     "/usr/local/bin/cfn-signal --exit-code $? --stack ", {"Ref": "AWS::StackName"},
                     "  --resource AirflowAutoscalingGroup ",
                     " --region ", {"Ref": "AWS::Region"}, "\n"
