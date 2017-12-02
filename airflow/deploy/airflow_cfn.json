@@ -222,8 +222,6 @@
                     "sudo systemctl start redis.service\n",
                     "sudo systemctl start airflow.service\n",
                     "export AIRFLOW_HOME=/root/airflow\n",
-                    "sudo -E sh -c 'airflow initdb'\n",
-                    "sudo -E sh -c 'airflow webserver -p 8080 -D'\n",
                     "/usr/local/bin/cfn-signal --exit-code $? --stack ", {"Ref": "AWS::StackName"},
                     "  --resource AirflowAutoscalingGroup ",
                     " --region ", {"Ref": "AWS::Region"}, "\n"
