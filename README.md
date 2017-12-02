@@ -43,3 +43,10 @@ Ami-aa2ea6d0
 - ELB has 0 instances active
     - Airflow service isn’t started, initdb & web server startup & QA ; seem to be the final steps however.
 
+
+## How To
+- git clone <repo>
+- cd <repo>
+- modify parameters file
+- AWS_PROFILE=605 packer build airflow/build/airflow.json (using shared profiles AWSCLI)
+- aws cloudformation create-stack --template-body file://airflow/deploy/airflow_cfn.json --parameters file://airflow/deploy/airflow_params.json --stack-name aaron-airflow-test --profile 605 --region us-east-1
